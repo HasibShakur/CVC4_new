@@ -3822,7 +3822,7 @@ Node QuantifierEliminate::strongerQEProcedure(Node n, QuantifierEliminate qe) {
   std::set<Node> boundVars;
   std::set<Node> vars;
   std::set < Node > bv = getBoundVariablesList(x, boundVars);
-  std::set<Node> v = getFreeVariablesList(copy, vars);
+  std::set<Node> v = getFreeVariablesList(t, vars);
   Debug("expr-qetest")<<"num of boundvars "<<bv.size()<<std::endl;
   Debug("expr-qetest")<<"num of free vars "<<v.size()<<std::endl;
   std::vector<Expr> variables;
@@ -3855,7 +3855,7 @@ Node QuantifierEliminate::strongerQEProcedure(Node n, QuantifierEliminate qe) {
     Debug("expr-qetest")<<map_insert->first<<" => "<<map_insert->second<<std::endl;
   }
   std::vector<Node> inner_expr;
-  Node strongerExpression = mkStrongerExpression(copy,assignment,inner_expr);
+  Node strongerExpression = mkStrongerExpression(t,assignment,inner_expr);
   Expr simplified = smt.simplify(test);
   Debug("expr-qetest")<<"simplified expression "<<simplified<<std::endl;
   return NodeTemplate<true>(simplified) ;
