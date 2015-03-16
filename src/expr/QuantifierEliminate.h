@@ -1,7 +1,7 @@
 #include "cvc4_public.h"
 
-#ifndef __CVC4__PARSER_QUANTIFIERELIMINATE_H
-#define __CVC4__PARSER_QUANTIFIERELIMINATE_H
+#ifndef __CVC4__EXPR_QUANTIFIERELIMINATE_H
+#define __CVC4__EXPR_QUANTIFIERELIMINATE_H
 
 #include<iostream>
 #include<vector>
@@ -95,8 +95,8 @@ private:
   static Node extractQuantifierFreeFormula(Node n);
   static Node strongerQEProcedure(Node n,QuantifierEliminate qe);
   static Node defautlQEProcedure(Node n,QuantifierEliminate qe);
-  static Node mkDeepCopy(Node n,ExprManager *em);
-  static Node copyInternalNodes(Node n,std::vector<Node> internalExp,ExprManager *em);
+ // static Node mkDeepCopy(Node n,ExprManager *em);
+ // static Node copyInternalNodes(Node n,std::vector<Node> internalExp,ExprManager *em);
   static Node mkStrongerExpression(Node n,std::map<Expr,Expr> assignment,std::vector<Node> inner_expr);
   static Node evaluateExpressionOnAssignment(Node n,std::map<Expr,Expr> assignment);
   //non static methods

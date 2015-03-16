@@ -543,7 +543,7 @@ Node QuantifierEliminate::multiplyEquationWithLcm(Node n, Node bv) {
 }
 Node QuantifierEliminate::parseEquation(Node t, Node bv,
                                         QuantifierEliminate q) {
-  std::vector<ExpressionContainer> temExpContainer = q.getExpContainer(q);
+  //std::vector<ExpressionContainer> temExpContainer = q.getExpContainer(q);
   Integer coeff = 1;
   Node n;
   if(t.getKind() == kind::NOT) {
@@ -3667,69 +3667,69 @@ Node QuantifierEliminate::extractQuantifierFreeFormula(Node n) {
   return t;
 }
 
-Node QuantifierEliminate::copyInternalNodes(Node n,std::vector<Node> internalExp,ExprManager *em) {
-  Node temp;
-  for(Node::iterator it = n.begin(),it_end = n.end();
-      it != it_end;
-      ++it)
-  {
-    Node child = *it;
-    Debug("expr-qetest")<<"child in copy Internal nodes "<<child<<std::endl;
-    if(child.isVar())
-    {
-      internalExp.push_back(NodeTemplate<true>(child));
-    }
-    else if(child.getKind() == kind::BOUND_VARIABLE)
-    {
-      internalExp.push_back(NodeTemplate<true>(child));
-    }
-    else if(child.isConst())
-    {
-      internalExp.push_back(child);
-    }
-    else
-    {
-      std::vector<Node> temp_exp;
-      temp = copyInternalNodes(child,temp_exp,em);
-      internalExp.push_back(temp);
-    }
-  }
- // Node returnNode = NodeManager::fromExprManager(em)->mkNode(n.getKind(),internalExp);
-  Node returnNode = NodeManager::currentNM()->mkNode(n.getKind(),internalExp);
-  return returnNode;
-}
+//Node QuantifierEliminate::copyInternalNodes(Node n,std::vector<Node> internalExp,ExprManager *em) {
+//  Node temp;
+//  for(Node::iterator it = n.begin(),it_end = n.end();
+//      it != it_end;
+//      ++it)
+//  {
+//    Node child = *it;
+//    Debug("expr-qetest")<<"child in copy Internal nodes "<<child<<std::endl;
+//    if(child.isVar())
+//    {
+//      internalExp.push_back(NodeTemplate<true>(child));
+//    }
+//    else if(child.getKind() == kind::BOUND_VARIABLE)
+//    {
+//      internalExp.push_back(NodeTemplate<true>(child));
+//    }
+//    else if(child.isConst())
+//    {
+//      internalExp.push_back(child);
+//    }
+//    else
+//    {
+//      std::vector<Node> temp_exp;
+//      temp = copyInternalNodes(child,temp_exp,em);
+//      internalExp.push_back(temp);
+//    }
+//  }
+// // Node returnNode = NodeManager::fromExprManager(em)->mkNode(n.getKind(),internalExp);
+//  Node returnNode = NodeManager::currentNM()->mkNode(n.getKind(),internalExp);
+//  return returnNode;
+//}
 
-Node QuantifierEliminate::mkDeepCopy(Node n, ExprManager *em) {
-  Node toReturn;
-  std::vector<Node> replaceNode;
-  Debug("expr-qetest")<<"Node n "<<n<<std::endl;
-  if(n.getKind() == kind::AND || n.getKind() == kind::OR) {
-    for(Node::iterator i = n.begin(), iEnd = n.end(); i != iEnd; ++i) {
-      Node c = *i;
-      Debug("expr-qetest")<<"Node c "<<c<<std::endl;
-      if(c.getKind() == kind::AND || c.getKind() == kind::OR) {
-        toReturn = mkDeepCopy(c, em);
-      } else {
-        std::vector<Node> internalExp;
-        toReturn = copyInternalNodes(c,internalExp,em);
-        Debug("expr-qetest")<<"Node temp "<<toReturn<<std::endl;
-      }
-      replaceNode.push_back(toReturn);
-    }
-//    Node returnNode = NodeManager::fromExprManager(em)->mkNode(n.getKind(),
-//    replaceNode);
-    Node returnNode = NodeManager::currentNM()->mkNode(n.getKind(),
-        replaceNode);
-    Debug("expr-qetest")<<"returnNode "<<returnNode<<std::endl;
-    return returnNode;
-  }
-  else {
-    std::vector<Node> internalExp;
-    Node returnNode = copyInternalNodes(n,internalExp,em);
-    Debug("expr-qetest")<<"returnNode "<<returnNode<<std::endl;
-    return returnNode;
-  }
-}
+//Node QuantifierEliminate::mkDeepCopy(Node n, ExprManager *em) {
+//  Node toReturn;
+//  std::vector<Node> replaceNode;
+//  Debug("expr-qetest")<<"Node n "<<n<<std::endl;
+//  if(n.getKind() == kind::AND || n.getKind() == kind::OR) {
+//    for(Node::iterator i = n.begin(), iEnd = n.end(); i != iEnd; ++i) {
+//      Node c = *i;
+//      Debug("expr-qetest")<<"Node c "<<c<<std::endl;
+//      if(c.getKind() == kind::AND || c.getKind() == kind::OR) {
+//        toReturn = mkDeepCopy(c, em);
+//      } else {
+//        std::vector<Node> internalExp;
+//        toReturn = copyInternalNodes(c,internalExp,em);
+//        Debug("expr-qetest")<<"Node temp "<<toReturn<<std::endl;
+//      }
+//      replaceNode.push_back(toReturn);
+//    }
+////    Node returnNode = NodeManager::fromExprManager(em)->mkNode(n.getKind(),
+////    replaceNode);
+//    Node returnNode = NodeManager::currentNM()->mkNode(n.getKind(),
+//        replaceNode);
+//    Debug("expr-qetest")<<"returnNode "<<returnNode<<std::endl;
+//    return returnNode;
+//  }
+//  else {
+//    std::vector<Node> internalExp;
+//    Node returnNode = copyInternalNodes(n,internalExp,em);
+//    Debug("expr-qetest")<<"returnNode "<<returnNode<<std::endl;
+//    return returnNode;
+//  }
+//}
 
 
 Node QuantifierEliminate::evaluateExpressionOnAssignment(Node n,std::map<Expr,Expr> assignment)
@@ -3808,9 +3808,9 @@ Node QuantifierEliminate::strongerQEProcedure(Node n, QuantifierEliminate qe) {
     t = convertIFF(t);
   }
   Debug("expr-qetest")<<"After rewriting "<<t<<std::endl;
-  ExprManager *em = new ExprManager;
-  Node copy = mkDeepCopy(t, em);
-  Expr test = copy.toExpr();
+//  ExprManager *em = new ExprManager;
+ // Node copy = mkDeepCopy(t, em);
+  Expr test = t.toExpr();
   Debug("expr-qetest")<<"After deep copy "<<test<<std::endl;
   ExprManager *em1 = t.toExpr().getExprManager();
   SmtEngine smt(em1);
@@ -3858,7 +3858,7 @@ Node QuantifierEliminate::strongerQEProcedure(Node n, QuantifierEliminate qe) {
   Node strongerExpression = mkStrongerExpression(copy,assignment,inner_expr);
   Expr simplified = smt.simplify(test);
   Debug("expr-qetest")<<"simplified expression "<<simplified<<std::endl;
-  return NodeManager::fromExpr(simplified);
+  return NodeTemplate<true>(simplified) ;
 }
 
 Node QuantifierEliminate::defautlQEProcedure(Node n, QuantifierEliminate qe) {
