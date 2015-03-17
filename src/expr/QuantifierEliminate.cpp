@@ -3694,22 +3694,6 @@ Node QuantifierEliminate::evaluateExpressionOnAssignment(Node n,std::map<Node,No
   Debug("expr-qetest")<<"after replacement with model Expression "<<temp<<std::endl;
   temp = Rewriter::rewrite(temp);
   Debug("expr-qetest")<<"after rewriting Expression "<<temp<<std::endl;
-//  for(Node::iterator i = n.begin(),i_end = n.end();
-//      i!= i_end;
-//      ++i)
-//  {
-//    Node c = *i;
-//    if(isVarQE(c))
-//    {
-//      it=assignment.find(c);
-//      Debug("expr-qetest")<<"value to key "<<c<<" "<<assignment.find(c)->second <<std::endl;
-//      TNode tn1 = c;
-//      TNode tn2 = assignment.find(c)->second;
-//      temp = temp.substitute(tn1,tn2);
-//    }
-//
-//  }
-
   return temp;
 }
 
@@ -3717,54 +3701,56 @@ Node QuantifierEliminate::mkStrongerExpression(Node n,std::map<Node,Node> assign
 {
   Node toReturn;
   Debug("expr-qetest")<<"Original Expression "<<n<<std::endl;
-  if(n.getKind() == kind::AND)
+  if(n.getKind() == kind::AND || n.getKind() == kind::OR)
   {
-    for(Node::iterator i = n.begin(),i_end = n.end();
-        i != i_end;
-        ++i)
-    {
-      Node child = *i;
-      if(child.getKind() == kind::AND || child.getKind() == kind::OR)
+    if(n.getKind() == kind::AND)
       {
-        toReturn = mkStrongerExpression(child,assignment,inner_expr);
-      }
-      else
-      {
-        toReturn = child;
-        inner_expr.push_back(child);
-      }
-    }
-    Node returnNode = NodeManager::currentNM()->mkNode(kind::AND,
-            inner_expr);
-        Debug("expr-qetest")<<"returnNode "<<returnNode<<std::endl;
-        return returnNode;
-
-  }
-  else if(n.getKind() == kind::OR)
-  {
-    for(Node::iterator j = n.begin(),j_end = n.end();
-        j != j_end;
-        ++j)
-    {
-      Node child1 = *j;
-      if(child1.getKind() == kind::AND || child1.getKind() == kind::OR)
-      {
-        toReturn = mkStrongerExpression(child1,assignment,inner_expr);
-      }
-      else
-      {
-        toReturn = evaluateExpressionOnAssignment(child1,assignment);
-        if(toReturn == mkBoolNode(true))
+        for(Node::iterator i = n.begin(),i_end = n.end();
+            i != i_end;
+            ++i)
         {
-          inner_expr.push_back(child1);
+          Node child = *i;
+          if(child.getKind() == kind::AND || child.getKind() == kind::OR)
+          {
+            toReturn = mkStrongerExpression(child,assignment,inner_expr);
+          }
+          else
+          {
+            toReturn = child;
+            inner_expr.push_back(child);
+          }
         }
-       // inner_expr.push_back(toReturn);
       }
-    }
-    Node returnNode = NodeManager::currentNM()->mkNode(kind::OR,
-                inner_expr);
+      else if(n.getKind() == kind::OR)
+      {
+        for(Node::iterator j = n.begin(),j_end = n.end();
+            j != j_end;
+            ++j)
+        {
+          Node child1 = *j;
+          if(child1.getKind() == kind::AND || child1.getKind() == kind::OR)
+          {
+            toReturn = mkStrongerExpression(child1,assignment,inner_expr);
+          }
+          else
+          {
+            toReturn = evaluateExpressionOnAssignment(child1,assignment);
+            if(toReturn == mkBoolNode(true))
+            {
+              inner_expr.push_back(child1);
+              break ;
+            }
+            else
+            {}
+           // inner_expr.push_back(toReturn);
+          }
+        }
+      }
+    Node returnNode = NodeManager::currentNM()->mkNode(n.getKind(),inner_expr);
+    Debug("expr-qetest")<<"Return Expression "<<n<<std::endl;
     return returnNode;
   }
+
   else
   {
     toReturn = n;
