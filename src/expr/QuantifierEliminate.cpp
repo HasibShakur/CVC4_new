@@ -3811,7 +3811,8 @@ Node QuantifierEliminate::strongerQEProcedure(Node n, QuantifierEliminate qe) {
   Node strongerExpression = mkStrongerExpression(t, assignment);
 
   Debug("expr-qetest")<<"stronger expression "<<strongerExpression<<std::endl;
-  return NodeTemplate<true>(strongerExpression);
+  Node returnNode = computeProjections(n,qe);
+  return returnNode;
 }
 
 Node QuantifierEliminate::defautlQEProcedure(Node n, QuantifierEliminate qe) {
