@@ -3667,80 +3667,53 @@ Node QuantifierEliminate::extractQuantifierFreeFormula(Node n) {
   return t;
 }
 
-//Node QuantifierEliminate::copyInternalNodes(Node n,std::vector<Node> internalExp,ExprManager *em) {
-//  Node temp;
-//  for(Node::iterator it = n.begin(),it_end = n.end();
-//      it != it_end;
-//      ++it)
-//  {
-//    Node child = *it;
-//    Debug("expr-qetest")<<"child in copy Internal nodes "<<child<<std::endl;
-//    if(child.isVar())
-//    {
-//      internalExp.push_back(NodeTemplate<true>(child));
-//    }
-//    else if(child.getKind() == kind::BOUND_VARIABLE)
-//    {
-//      internalExp.push_back(NodeTemplate<true>(child));
-//    }
-//    else if(child.isConst())
-//    {
-//      internalExp.push_back(child);
-//    }
-//    else
-//    {
-//      std::vector<Node> temp_exp;
-//      temp = copyInternalNodes(child,temp_exp,em);
-//      internalExp.push_back(temp);
-//    }
-//  }
-// // Node returnNode = NodeManager::fromExprManager(em)->mkNode(n.getKind(),internalExp);
-//  Node returnNode = NodeManager::currentNM()->mkNode(n.getKind(),internalExp);
-//  return returnNode;
-//}
-
-//Node QuantifierEliminate::mkDeepCopy(Node n, ExprManager *em) {
-//  Node toReturn;
-//  std::vector<Node> replaceNode;
-//  Debug("expr-qetest")<<"Node n "<<n<<std::endl;
-//  if(n.getKind() == kind::AND || n.getKind() == kind::OR) {
-//    for(Node::iterator i = n.begin(), iEnd = n.end(); i != iEnd; ++i) {
-//      Node c = *i;
-//      Debug("expr-qetest")<<"Node c "<<c<<std::endl;
-//      if(c.getKind() == kind::AND || c.getKind() == kind::OR) {
-//        toReturn = mkDeepCopy(c, em);
-//      } else {
-//        std::vector<Node> internalExp;
-//        toReturn = copyInternalNodes(c,internalExp,em);
-//        Debug("expr-qetest")<<"Node temp "<<toReturn<<std::endl;
-//      }
-//      replaceNode.push_back(toReturn);
-//    }
-////    Node returnNode = NodeManager::fromExprManager(em)->mkNode(n.getKind(),
-////    replaceNode);
-//    Node returnNode = NodeManager::currentNM()->mkNode(n.getKind(),
-//        replaceNode);
-//    Debug("expr-qetest")<<"returnNode "<<returnNode<<std::endl;
-//    return returnNode;
-//  }
-//  else {
-//    std::vector<Node> internalExp;
-//    Node returnNode = copyInternalNodes(n,internalExp,em);
-//    Debug("expr-qetest")<<"returnNode "<<returnNode<<std::endl;
-//    return returnNode;
-//  }
-//}
-
-
-Node QuantifierEliminate::evaluateExpressionOnAssignment(Node n,std::map<Expr,Expr> assignment)
+Node QuantifierEliminate::evaluateExpressionOnAssignment(Node n,std::map<Node,Node> assignment)
 {
-  Debug("expr-qetest")<<"Inner Expression "<<n<<std::endl;
- // Expr result = smt.simplify(n.toExpr());
- // Debug("expr-qetest")<<"After Simplify Expression "<<result<<std::endl;
-  return n;
+  Debug("expr-qetest")<<"before replacement with model Expression "<<n<<std::endl;
+  Node temp = n;
+  std::map<Node,Node>::iterator it = assignment.begin();
+  std::map<Node,Node>::iterator it1 = assignment.begin();
+  while(it!= assignment.end())
+  {
+    it1 = assignment.find(it->first);
+    if(it1 == assignment.end())
+    {
+      continue;
+    }
+    else
+    {
+      TNode tn1 = it->first;
+      Debug("expr-qetest")<<"tn1 in evalute expression on assignment "<<it1->first<<std::endl;
+      TNode tn2 = it->second;
+      Debug("expr-qetest")<<"tn2 in evalute expression on assignment "<<it1->second<<std::endl;
+      temp = temp.substitute(tn1,tn2);
+      Debug("expr-qetest")<<"After substitution in evalute expression on assignment "<<it1->second<<std::endl;
+      ++it;
+    }
+  }
+  Debug("expr-qetest")<<"after replacement with model Expression "<<temp<<std::endl;
+  temp = Rewriter::rewrite(temp);
+  Debug("expr-qetest")<<"after rewriting Expression "<<temp<<std::endl;
+//  for(Node::iterator i = n.begin(),i_end = n.end();
+//      i!= i_end;
+//      ++i)
+//  {
+//    Node c = *i;
+//    if(isVarQE(c))
+//    {
+//      it=assignment.find(c);
+//      Debug("expr-qetest")<<"value to key "<<c<<" "<<assignment.find(c)->second <<std::endl;
+//      TNode tn1 = c;
+//      TNode tn2 = assignment.find(c)->second;
+//      temp = temp.substitute(tn1,tn2);
+//    }
+//
+//  }
+
+  return temp;
 }
 
-Node QuantifierEliminate::mkStrongerExpression(Node n,std::map<Expr,Expr> assignment,std::vector<Node> inner_expr)
+Node QuantifierEliminate::mkStrongerExpression(Node n,std::map<Node,Node> assignment,std::vector<Node> inner_expr)
 {
   Node toReturn;
   Debug("expr-qetest")<<"Original Expression "<<n<<std::endl;
@@ -3781,7 +3754,11 @@ Node QuantifierEliminate::mkStrongerExpression(Node n,std::map<Expr,Expr> assign
       else
       {
         toReturn = evaluateExpressionOnAssignment(child1,assignment);
-        inner_expr.push_back(toReturn);
+        if(toReturn == mkBoolNode(true))
+        {
+          inner_expr.push_back(child1);
+        }
+       // inner_expr.push_back(toReturn);
       }
     }
     Node returnNode = NodeManager::currentNM()->mkNode(kind::OR,
@@ -3808,8 +3785,6 @@ Node QuantifierEliminate::strongerQEProcedure(Node n, QuantifierEliminate qe) {
     t = convertIFF(t);
   }
   Debug("expr-qetest")<<"After rewriting "<<t<<std::endl;
-//  ExprManager *em = new ExprManager;
- // Node copy = mkDeepCopy(t, em);
   Expr test = t.toExpr();
   Debug("expr-qetest")<<"After deep copy "<<test<<std::endl;
   ExprManager *em1 = t.toExpr().getExprManager();
@@ -3843,11 +3818,10 @@ Node QuantifierEliminate::strongerQEProcedure(Node n, QuantifierEliminate qe) {
     }
   }
   Result result = smt.checkSat(test);
-  std::map<Expr,Expr> assignment;
-  std::map<Expr,Expr>::iterator map_insert = assignment.begin();
+  std::map<Node,Node> assignment;
+  std::map<Node,Node>::iterator map_insert = assignment.begin();
   for(int i = 0; i < (int) variables.size(); i++) {
-    //Debug("expr-qetest")<<"Value of "<<variables[i]<<" "<<smt.getValue(variables[i])<<std::endl;
-    assignment.insert(map_insert, std::pair<Expr,Expr>(variables[i],smt.getValue(variables[i])));
+    assignment.insert(map_insert, std::pair<Node,Node>(NodeTemplate<true>(variables[i]),NodeTemplate<true>(smt.getValue(variables[i]))));
   }
 
   for(map_insert = assignment.begin(); map_insert!=assignment.end();++map_insert)
