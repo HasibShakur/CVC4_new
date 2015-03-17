@@ -3667,8 +3667,8 @@ Node QuantifierEliminate::extractQuantifierFreeFormula(Node n) {
   return t;
 }
 
-Node QuantifierEliminate::evaluateExpressionOnAssignment(Node n,std::map<Node,Node> assignment)
-{
+Node QuantifierEliminate::evaluateExpressionOnAssignment(
+    Node n, std::map<Node, Node> assignment) {
   Debug("expr-qetest")<<"before replacement with model Expression "<<n<<std::endl;
   Node temp = n;
   std::map<Node,Node>::iterator it = assignment.begin();
@@ -3683,11 +3683,8 @@ Node QuantifierEliminate::evaluateExpressionOnAssignment(Node n,std::map<Node,No
     else
     {
       TNode tn1 = it->first;
-      Debug("expr-qetest")<<"tn1 in evalute expression on assignment "<<it1->first<<std::endl;
       TNode tn2 = it->second;
-      Debug("expr-qetest")<<"tn2 in evalute expression on assignment "<<it1->second<<std::endl;
       temp = temp.substitute(tn1,tn2);
-      Debug("expr-qetest")<<"After substitution in evalute expression on assignment "<<it1->second<<std::endl;
       ++it;
     }
   }
@@ -3697,64 +3694,58 @@ Node QuantifierEliminate::evaluateExpressionOnAssignment(Node n,std::map<Node,No
   return temp;
 }
 
-Node QuantifierEliminate::mkStrongerExpression(Node n,std::map<Node,Node> assignment,std::vector<Node> inner_expr)
-{
+std::vector<Node> QuantifierEliminate::mkStrongerExpression2(
+    Node n, std::map<Node, Node> assignment, std::vector<Node> inner_expr) {
   Node toReturn;
   Debug("expr-qetest")<<"Original Expression "<<n<<std::endl;
+  if(n.getKind() == kind::AND) {
+    for(Node::iterator i = n.begin(), i_end = n.end(); i != i_end; ++i) {
+      Node child = *i;
+      if(child.getKind() == kind::AND || child.getKind() == kind::OR) {
+        toReturn = mkStrongerExpression(child, assignment, inner_expr);
+      } else {
+        toReturn = child;
+        inner_expr.push_back(child);
+      }
+    }
+  } else{
+    for(Node::iterator j = n.begin(), j_end = n.end(); j != j_end; ++j) {
+      Node child1 = *j;
+      if(child1.getKind() == kind::AND || child1.getKind() == kind::OR) {
+        toReturn = mkStrongerExpression(child1, assignment, inner_expr);
+      } else {
+        toReturn = evaluateExpressionOnAssignment(child1, assignment);
+        if(toReturn == mkBoolNode(true)) {
+          Debug("expr-qetest")<<"toReturn in mkStronger Expression "<<toReturn<<" and child1 "<<child1<<std::endl;
+          inner_expr.push_back(child1);
+          break;
+        }
+        else
+        {
+          Debug("expr-qetest")<<"toReturn in mkStronger Expression "<<toReturn<<" and child1 "<<child1<<std::endl;
+        }
+      }
+    }
+  }
+  return inner_expr;
+}
+
+Node QuantifierEliminate::mkStrongerExpression(
+    Node n, std::map<Node, Node> assignment) {
+  Debug("expr-qetest")<<"Original Expression "<<n<<std::endl;
+  std::vector<Node> inner_expr;
+  std::vector<Node> temp;
   if(n.getKind() == kind::AND || n.getKind() == kind::OR)
   {
-    if(n.getKind() == kind::AND)
-      {
-        for(Node::iterator i = n.begin(),i_end = n.end();
-            i != i_end;
-            ++i)
-        {
-          Node child = *i;
-          if(child.getKind() == kind::AND || child.getKind() == kind::OR)
-          {
-            toReturn = mkStrongerExpression(child,assignment,inner_expr);
-          }
-          else
-          {
-            toReturn = child;
-            inner_expr.push_back(child);
-          }
-        }
-      }
-      else if(n.getKind() == kind::OR)
-      {
-        for(Node::iterator j = n.begin(),j_end = n.end();
-            j != j_end;
-            ++j)
-        {
-          Node child1 = *j;
-          if(child1.getKind() == kind::AND || child1.getKind() == kind::OR)
-          {
-            toReturn = mkStrongerExpression(child1,assignment,inner_expr);
-          }
-          else
-          {
-            toReturn = evaluateExpressionOnAssignment(child1,assignment);
-            if(toReturn == mkBoolNode(true))
-            {
-              inner_expr.push_back(child1);
-              break ;
-            }
-            else
-            {}
-           // inner_expr.push_back(toReturn);
-          }
-        }
-      }
-    Node returnNode = NodeManager::currentNM()->mkNode(n.getKind(),inner_expr);
-    Debug("expr-qetest")<<"Return Expression "<<n<<std::endl;
+    temp = mkStrongerExpression2(n,assignment,inner_expr);
+    Node returnNode = NodeManager::currentNM()->mkNode(n.getKind(),temp);
+    Debug("expr-qetest")<<"Return Expression "<<returnNode<<std::endl;
     return returnNode;
   }
-
   else
   {
-    toReturn = n;
-    return toReturn;
+    Debug("expr-qetest")<<"Return Expression "<<n<<std::endl;
+    return n;
   }
 }
 
@@ -3804,21 +3795,23 @@ Node QuantifierEliminate::strongerQEProcedure(Node n, QuantifierEliminate qe) {
     }
   }
   Result result = smt.checkSat(test);
-  std::map<Node,Node> assignment;
-  std::map<Node,Node>::iterator map_insert = assignment.begin();
+  std::map<Node, Node> assignment;
+  std::map<Node, Node>::iterator map_insert = assignment.begin();
   for(int i = 0; i < (int) variables.size(); i++) {
-    assignment.insert(map_insert, std::pair<Node,Node>(NodeTemplate<true>(variables[i]),NodeTemplate<true>(smt.getValue(variables[i]))));
+    assignment.insert(
+        map_insert,
+        std::pair<Node, Node>(NodeTemplate<true>(variables[i]),
+                              NodeTemplate<true>(smt.getValue(variables[i]))));
   }
 
-  for(map_insert = assignment.begin(); map_insert!=assignment.end();++map_insert)
-  {
+  for(map_insert = assignment.begin(); map_insert != assignment.end();
+      ++map_insert) {
     Debug("expr-qetest")<<map_insert->first<<" => "<<map_insert->second<<std::endl;
   }
-  std::vector<Node> inner_expr;
-  Node strongerExpression = mkStrongerExpression(t,assignment,inner_expr);
-  Expr simplified = smt.simplify(test);
-  Debug("expr-qetest")<<"simplified expression "<<simplified<<std::endl;
-  return NodeTemplate<true>(simplified) ;
+  Node strongerExpression = mkStrongerExpression(t, assignment);
+
+  Debug("expr-qetest")<<"stronger expression "<<strongerExpression<<std::endl;
+  return NodeTemplate<true>(strongerExpression);
 }
 
 Node QuantifierEliminate::defautlQEProcedure(Node n, QuantifierEliminate qe) {

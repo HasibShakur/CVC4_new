@@ -97,7 +97,8 @@ private:
   static Node defautlQEProcedure(Node n,QuantifierEliminate qe);
  // static Node mkDeepCopy(Node n,ExprManager *em);
  // static Node copyInternalNodes(Node n,std::vector<Node> internalExp,ExprManager *em);
-  static Node mkStrongerExpression(Node n,std::map<Node,Node> assignment,std::vector<Node> inner_expr);
+  static std::vector<Node> mkStrongerExpression2(Node n,std::map<Node,Node> assignment,std::vector<Node> inner_expr);
+  static Node mkStrongerExpression(Node n,std::map<Node,Node> assignment);
   static Node evaluateExpressionOnAssignment(Node n,std::map<Node,Node> assignment);
   //non static methods
 
