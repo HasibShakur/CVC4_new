@@ -3702,7 +3702,7 @@ std::vector<Node> QuantifierEliminate::mkStrongerExpression2(
     for(Node::iterator i = n.begin(), i_end = n.end(); i != i_end; ++i) {
       Node child = *i;
       if(child.getKind() == kind::AND || child.getKind() == kind::OR) {
-        toReturn = mkStrongerExpression(child, assignment, inner_expr);
+        toReturn = mkStrongerExpression2(child, assignment, inner_expr);
       } else {
         toReturn = child;
         inner_expr.push_back(child);
@@ -3712,7 +3712,7 @@ std::vector<Node> QuantifierEliminate::mkStrongerExpression2(
     for(Node::iterator j = n.begin(), j_end = n.end(); j != j_end; ++j) {
       Node child1 = *j;
       if(child1.getKind() == kind::AND || child1.getKind() == kind::OR) {
-        toReturn = mkStrongerExpression(child1, assignment, inner_expr);
+        toReturn = mkStrongerExpression2(child1, assignment, inner_expr);
       } else {
         toReturn = evaluateExpressionOnAssignment(child1, assignment);
         if(toReturn == mkBoolNode(true)) {
