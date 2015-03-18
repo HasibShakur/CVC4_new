@@ -3728,10 +3728,18 @@ Node QuantifierEliminate::mkStrongerExpression(
     Node n, std::map<Node, Node> assignment) {
   std::vector<Node> inner_expr;
   std::vector<Node> temp;
+  Node returnNode;
   if(n.getKind() == kind::AND || n.getKind() == kind::OR)
   {
     temp = mkStrongerExpression2(n,assignment,inner_expr);
-    Node returnNode = NodeManager::currentNM()->mkNode(n.getKind(),temp);
+    if(temp.size()>1)
+    {
+      returnNode = NodeManager::currentNM()->mkNode(n.getKind(),temp);
+    }
+    else
+    {
+      returnNode = temp.back();
+    }
     return returnNode;
   }
   else
