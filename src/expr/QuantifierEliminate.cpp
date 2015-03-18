@@ -3744,7 +3744,6 @@ Node QuantifierEliminate::strongerQEProcedure(Node n, QuantifierEliminate qe) {
 
   NodeTemplate<true> x(n);
   Node t = extractQuantifierFreeFormula(x);
-  t = t.notNode();
   t = eliminateImpliesQE(t);
   t = convertToNNFQE(t);
   t = Rewriter::rewrite(t);
