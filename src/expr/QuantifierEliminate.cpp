@@ -3539,8 +3539,8 @@ Node QuantifierEliminate::prenexChecker(Node n) {
   Debug("expre-qetest")<<"toReturn from prenex checker "<<toReturn<<std::endl;
   return toReturn;
 }
-std::set<Node> QuantifierEliminate::getBoundVariablesList(
-    Node n, std::set<Node> boundVars) {
+std::vector<Node> QuantifierEliminate::getBoundVariablesList(
+    Node n, std::vector<Node> boundVars) {
   Node t;
   if(n.getKind() == kind::NOT) {
     t = n[0];
@@ -3551,9 +3551,11 @@ std::set<Node> QuantifierEliminate::getBoundVariablesList(
           std::vector < Node > bv = computeMultipleBoundVariables(child[0]);
           for(int i = 0; i < (int) bv.size(); i++) {
             if(bv[i].getNumChildren() > 0) {
-              boundVars.insert(bv[i][0]);
+              //boundVars.insert(bv[i][0]);
+              boundVars.push_back(bv[i][0]);
             } else {
-              boundVars.insert(bv[i]);
+              //boundVars.insert(bv[i]);
+              boundVars.push_back(bv[i]);
             }
           }
         } else {
@@ -3564,9 +3566,11 @@ std::set<Node> QuantifierEliminate::getBoundVariablesList(
       std::vector < Node > bv = computeMultipleBoundVariables(t[0]);
       for(int i = 0; i < (int) bv.size(); i++) {
         if(bv[i].getNumChildren() > 0) {
-          boundVars.insert(bv[i][0]);
+         // boundVars.insert(bv[i][0]);
+          boundVars.push_back(bv[i][0]);
         } else {
-          boundVars.insert(bv[i]);
+         // boundVars.insert(bv[i]);
+          boundVars.push_back(bv[i]);
         }
       }
       return getBoundVariablesList(t[1], boundVars);
@@ -3582,9 +3586,9 @@ std::set<Node> QuantifierEliminate::getBoundVariablesList(
         std::vector < Node > bv = computeMultipleBoundVariables(child[0]);
         for(int i = 0; i < (int) bv.size(); i++) {
           if(bv[i].getNumChildren() > 0) {
-            boundVars.insert(bv[i][0]);
+            boundVars.push_back(bv[i][0]);
           } else {
-            boundVars.insert(bv[i]);
+            boundVars.push_back(bv[i]);
           }
         }
       } else {
@@ -3596,9 +3600,9 @@ std::set<Node> QuantifierEliminate::getBoundVariablesList(
     std::vector < Node > bv = computeMultipleBoundVariables(n[0]);
     for(int i = 0; i < (int) bv.size(); i++) {
       if(bv[i].getNumChildren() > 0) {
-        boundVars.insert(bv[i][0]);
+        boundVars.push_back(bv[i][0]);
       } else {
-        boundVars.insert(bv[i]);
+        boundVars.push_back(bv[i]);
       }
     }
     return getBoundVariablesList(n[1], boundVars);
@@ -3759,15 +3763,15 @@ Node QuantifierEliminate::strongerQEProcedure(Node n, QuantifierEliminate qe) {
   Type integer = em1->integerType();
   std::set<Node> boundVars;
   std::set<Node> vars;
-  std::set < Node > bv = getBoundVariablesList(x, boundVars);
+  std::vector < Node > bv = getBoundVariablesList(x, boundVars);
   std::set<Node> v = getFreeVariablesList(t, vars);
   std::vector<Expr> variables;
-  for(std::set<Node>::iterator it = bv.begin(); it != bv.end(); ++it) {
-    Debug("expr-qetest")<<"Boundvars "<<*it<<std::endl;
-    Node child = *it;
-    if(child.isVar() && child.getKind() == kind::BOUND_VARIABLE)
+  for(int i=0;i<bv.size();i++)
+  {
+    Debug("expr-qetest")<<"Boundvars "<<bv[i]<<std::endl;
+    if(bv[i].isVar() && bv[i].getKind() == kind::BOUND_VARIABLE)
     {
-      variables.push_back(child.toExpr());
+      variables.push_back(bv[i].toExpr());
     }
   }
   for(std::set<Node>::iterator it = v.begin(); it != v.end(); ++it) {
