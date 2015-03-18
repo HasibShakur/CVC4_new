@@ -3913,7 +3913,7 @@ QuantifierEliminate QuantifierEliminate::qeEngine(Node n, int numOfQuantifiers,
         }
         else
         {
-          final = strongerQEProcedure(temp,qe);
+          final = defautlQEProcedure(temp,qe);
           Debug("expr-qetest")<<"After qe "<<final<<std::endl;
           qe.setEquivalentExpression(final);
           qe.setMessage("success");
