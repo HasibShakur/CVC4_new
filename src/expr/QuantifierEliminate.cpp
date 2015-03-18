@@ -3609,7 +3609,6 @@ std::set<Node> QuantifierEliminate::getBoundVariablesList(
 std::vector<Node> QuantifierEliminate::obtainFreeVariable(Node n,
                                                           std::vector<Node> v) {
   Node toReturn;
-  Debug("expr-qetest")<<"Expession in obtain free variable "<<n<<std::endl;
   for(Node::iterator i = n.begin(), i_end = n.end(); i != i_end; ++i) {
     Node c = *i;
     if(c.isVar() && c.getKind() != kind::BOUND_VARIABLE) {
@@ -3638,7 +3637,6 @@ std::set<Node> QuantifierEliminate::getFreeVariablesList(Node n,
       } else {
         std::vector<Node> vars;
         vars = obtainFreeVariable(child, vars);
-        Debug("expr-qetest")<<"free vars size "<<vars.size()<<std::endl;
         for(int i = 0; i < (int) vars.size(); i++) {
           fv.insert(vars[i]);
         }
@@ -3648,7 +3646,6 @@ std::set<Node> QuantifierEliminate::getFreeVariablesList(Node n,
   } else {
     std::vector<Node> vars;
     vars = obtainFreeVariable(t, vars);
-    Debug("expr-qetest")<<"free vars size "<<vars.size()<<std::endl;
     for(int i = 0; i < (int) vars.size(); i++) {
       fv.insert(vars[i]);
     }
@@ -3669,7 +3666,6 @@ Node QuantifierEliminate::extractQuantifierFreeFormula(Node n) {
 
 Node QuantifierEliminate::evaluateExpressionOnAssignment(
     Node n, std::map<Node, Node> assignment) {
-  Debug("expr-qetest")<<"before replacement with model Expression "<<n<<std::endl;
   Node temp = n;
   std::map<Node,Node>::iterator it = assignment.begin();
   std::map<Node,Node>::iterator it1 = assignment.begin();
@@ -3688,16 +3684,13 @@ Node QuantifierEliminate::evaluateExpressionOnAssignment(
       ++it;
     }
   }
-  Debug("expr-qetest")<<"after replacement with model Expression "<<temp<<std::endl;
   temp = Rewriter::rewrite(temp);
-  Debug("expr-qetest")<<"after rewriting Expression "<<temp<<std::endl;
   return temp;
 }
 
 std::vector<Node> QuantifierEliminate::mkStrongerExpression2(
     Node n, std::map<Node, Node> assignment, std::vector<Node> inner_expr) {
   Node toReturn;
-  Debug("expr-qetest")<<"Original Expression "<<n<<std::endl;
   if(n.getKind() == kind::AND) {
     for(Node::iterator i = n.begin(), i_end = n.end(); i != i_end; ++i) {
       Node child = *i;
@@ -3716,14 +3709,11 @@ std::vector<Node> QuantifierEliminate::mkStrongerExpression2(
       } else {
         toReturn = evaluateExpressionOnAssignment(child1, assignment);
         if(toReturn == mkBoolNode(true)) {
-          Debug("expr-qetest")<<"toReturn in mkStronger Expression "<<toReturn<<" and child1 "<<child1<<std::endl;
           inner_expr.push_back(child1);
           break;
         }
         else
-        {
-          Debug("expr-qetest")<<"toReturn in mkStronger Expression "<<toReturn<<" and child1 "<<child1<<std::endl;
-        }
+        {}
       }
     }
   }
@@ -3732,19 +3722,16 @@ std::vector<Node> QuantifierEliminate::mkStrongerExpression2(
 
 Node QuantifierEliminate::mkStrongerExpression(
     Node n, std::map<Node, Node> assignment) {
-  Debug("expr-qetest")<<"Original Expression "<<n<<std::endl;
   std::vector<Node> inner_expr;
   std::vector<Node> temp;
   if(n.getKind() == kind::AND || n.getKind() == kind::OR)
   {
     temp = mkStrongerExpression2(n,assignment,inner_expr);
     Node returnNode = NodeManager::currentNM()->mkNode(n.getKind(),temp);
-    Debug("expr-qetest")<<"Return Expression "<<returnNode<<std::endl;
     return returnNode;
   }
   else
   {
-    Debug("expr-qetest")<<"Return Expression "<<n<<std::endl;
     return n;
   }
 }
@@ -3763,7 +3750,6 @@ Node QuantifierEliminate::strongerQEProcedure(Node n, QuantifierEliminate qe) {
   }
   Debug("expr-qetest")<<"After rewriting "<<t<<std::endl;
   Expr test = t.toExpr();
-  Debug("expr-qetest")<<"After deep copy "<<test<<std::endl;
   ExprManager *em1 = t.toExpr().getExprManager();
   SmtEngine smt(em1);
   SmtScope smts(&smt);
@@ -3775,8 +3761,6 @@ Node QuantifierEliminate::strongerQEProcedure(Node n, QuantifierEliminate qe) {
   std::set<Node> vars;
   std::set < Node > bv = getBoundVariablesList(x, boundVars);
   std::set<Node> v = getFreeVariablesList(t, vars);
-  Debug("expr-qetest")<<"num of boundvars "<<bv.size()<<std::endl;
-  Debug("expr-qetest")<<"num of free vars "<<v.size()<<std::endl;
   std::vector<Expr> variables;
   for(std::set<Node>::iterator it = bv.begin(); it != bv.end(); ++it) {
     Debug("expr-qetest")<<"Boundvars "<<*it<<std::endl;
@@ -3809,9 +3793,19 @@ Node QuantifierEliminate::strongerQEProcedure(Node n, QuantifierEliminate qe) {
     Debug("expr-qetest")<<map_insert->first<<" => "<<map_insert->second<<std::endl;
   }
   Node strongerExpression = mkStrongerExpression(t, assignment);
-
-  Debug("expr-qetest")<<"stronger expression "<<strongerExpression<<std::endl;
-  Node returnNode = computeProjections(n,qe);
+  Debug("expr-qetest")<<"stronger expression without quantifiers "<<strongerExpression<<std::endl;
+  Node var = NodeManager::currentNM()->mkNode(kind::BOUND_VAR_LIST,bv);
+  Debug("expr-qetest")<<"var "<<var<<std::endl;
+  std::vector<Node> children;
+  children.push_back(var);
+  children.push_back(strongerExpression);
+  Node inputExpr = NodeManager::currentNM()->mkNode(kind::FORALL,children);
+  if(n.getKind() == kind::NOT)
+  {
+    inputExpr = inputExpr.notNode();
+  }
+  Debug("expr-qetest")<<"stronger expression with quantifiers "<<inputExpr<<std::endl;
+  Node returnNode = computeProjections(inputExpr,qe);
   return returnNode;
 }
 
