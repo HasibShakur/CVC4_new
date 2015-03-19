@@ -2169,7 +2169,9 @@ std::vector<Node> QuantifierEliminate::getMinimalExprForRightProjection(
         Debug("expr-qetest")<<"Multiple b's "<<toReturn<<std::endl;
         bExpression.push_back(toReturn);
       }
-      else {}
+      else {
+        bExpression.push_back(mkBoolNode(false));
+      }
     }
     else if(n[1].hasBoundVar() && containsSameBoundVar(n[1],bv))
     {
@@ -2180,7 +2182,9 @@ std::vector<Node> QuantifierEliminate::getMinimalExprForRightProjection(
         Debug("expr-qetest")<<"Multiple b's "<<toReturn<<std::endl;
         bExpression.push_back(toReturn);
       }
-      else {}
+      else {
+        bExpression.push_back(mkBoolNode(false));
+      }
     }
     else
     {
