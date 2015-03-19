@@ -3851,6 +3851,15 @@ QuantifierEliminate QuantifierEliminate::qeEngine(Node n, int numOfQuantifiers,
     qe.setEquivalentExpression(qe.getOriginalExpression());
     return qe;
   }
+  else if(temp == mkBoolNode(true) || temp == mkBoolNode(false))
+  {
+    Debug("expr-qetest")<<"Type checker has found no problem "<<std::endl;
+    Debug("expr-qetest")<<"Prenex checker has found no problem "<<std::endl;
+    Debug("expr-qetest")<<"After qe "<<temp<<std::endl;
+    qe.setEquivalentExpression(temp);
+    qe.setMessage("success");
+    return qe;
+  }
   else
   {
     if(boundVarTypeChecker(temp) == mkBoolNode(false))
@@ -3884,45 +3893,18 @@ QuantifierEliminate QuantifierEliminate::qeEngine(Node n, int numOfQuantifiers,
       }
       else if(qe.getOptionQE() == "strong")
       {
-        if(temp == mkBoolNode(true) || temp == mkBoolNode(false))
-        {
-          Debug("expr-qetest")<<"Type checker has found no problem "<<std::endl;
-          Debug("expr-qetest")<<"Prenex checker has found no problem "<<std::endl;
-          final = computeProjections(temp,qe);
-          Debug("expr-qetest")<<"After qe "<<final<<std::endl;
-          qe.setEquivalentExpression(final);
-          qe.setMessage("success");
-          return qe;
-        }
-        else
-        {
           Node t = strongerQEProcedure(temp,qe);
           qe.setEquivalentExpression(t);
           qe.setMessage("success");
           return qe;
-        }
-
       }
       else
       {
-        if(temp == mkBoolNode(true) || temp == mkBoolNode(false))
-        {
-          Debug("expr-qetest")<<"Type checker has found no problem "<<std::endl;
-          Debug("expr-qetest")<<"Prenex checker has found no problem "<<std::endl;
-          final = computeProjections(temp,qe);
-          Debug("expr-qetest")<<"After qe "<<final<<std::endl;
-          qe.setEquivalentExpression(final);
-          qe.setMessage("success");
-          return qe;
-        }
-        else
-        {
           final = defautlQEProcedure(temp,qe);
           Debug("expr-qetest")<<"After qe "<<final<<std::endl;
           qe.setEquivalentExpression(final);
           qe.setMessage("success");
           return qe;
-        }
       }
     }
     else if(!typeCheck)
