@@ -3670,9 +3670,9 @@ Node QuantifierEliminate::extractQuantifierFreeFormula(Node n) {
     std::vector<Node> miniscopedExpr;
     for(Node::iterator m_i = n[0].begin(), m_end = n[0].end(); m_i != m_end; ++m_i) {
       Node exprs = *m_i;
-      if(exprs == kind::FORALL) {
+      if(exprs.getKind() == kind::FORALL) {
         miniscopedExpr.push_back(exprs[1]);
-      } else if(exprs == kind::NOT && exprs[0] == kind::FORALL) {
+      } else if(exprs.getKind() == kind::NOT && exprs[0] == kind::FORALL) {
         miniscopedExpr.push_back(exprs[0][1].notNode());
       } else {
         miniscopedExpr.push_back(exprs);
@@ -3684,9 +3684,9 @@ Node QuantifierEliminate::extractQuantifierFreeFormula(Node n) {
     std::vector<Node> miniscopedExpr;
     for(Node::iterator m_i = n.begin(), m_end = n.end(); m_i != m_end; ++m_i) {
       Node exprs = *m_i;
-      if(exprs == kind::FORALL) {
+      if(exprs.getKind() == kind::FORALL) {
         miniscopedExpr.push_back(exprs[1]);
-      } else if(exprs == kind::NOT && exprs[0] == kind::FORALL) {
+      } else if(exprs.getKind() == kind::NOT && exprs[0] == kind::FORALL) {
         miniscopedExpr.push_back(exprs[0][1].notNode());
       } else {
         miniscopedExpr.push_back(exprs);
