@@ -3672,7 +3672,7 @@ Node QuantifierEliminate::extractQuantifierFreeFormula(Node n) {
       Node exprs = *m_i;
       if(exprs.getKind() == kind::FORALL) {
         miniscopedExpr.push_back(exprs[1]);
-      } else if(exprs.getKind() == kind::NOT && exprs[0] == kind::FORALL) {
+      } else if(exprs.getKind() == kind::NOT && exprs[0].getKind() == kind::FORALL) {
         miniscopedExpr.push_back(exprs[0][1].notNode());
       } else {
         miniscopedExpr.push_back(exprs);
@@ -3686,7 +3686,7 @@ Node QuantifierEliminate::extractQuantifierFreeFormula(Node n) {
       Node exprs = *m_i;
       if(exprs.getKind() == kind::FORALL) {
         miniscopedExpr.push_back(exprs[1]);
-      } else if(exprs.getKind() == kind::NOT && exprs[0] == kind::FORALL) {
+      } else if(exprs.getKind() == kind::NOT && exprs[0].getKind() == kind::FORALL) {
         miniscopedExpr.push_back(exprs[0][1].notNode());
       } else {
         miniscopedExpr.push_back(exprs);
