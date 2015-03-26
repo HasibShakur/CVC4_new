@@ -1847,12 +1847,12 @@ Node QuantifierEliminate::rewriteForSameCoefficients(Node n, Node bv,
 //    Debug("expr-qetest")<<"Parse equation result "<<t<<std::endl;
 //    return t.negate();
 //  } else {
-    t = n;
-    t = rewriteRelationOperatorQE(t, bv, q);
-    Debug("expr-qetest")<<"rewrite relational operator result "<<t<<std::endl;
-    t = parseEquation(t, bv, q);
-    Debug("expr-qetest")<<"Parse equation result "<<t<<std::endl;
-    return t;
+  t = n;
+  t = rewriteRelationOperatorQE(t, bv, q);
+  Debug("expr-qetest")<<"rewrite relational operator result "<<t<<std::endl;
+  t = parseEquation(t, bv, q);
+  Debug("expr-qetest")<<"Parse equation result "<<t<<std::endl;
+  return t;
 //  }
 }
 
@@ -3570,10 +3570,10 @@ std::vector<Node> QuantifierEliminate::getBoundVariablesList(
       std::vector < Node > bv = computeMultipleBoundVariables(t[0]);
       for(int i = 0; i < (int) bv.size(); i++) {
         if(bv[i].getNumChildren() > 0) {
-         // boundVars.insert(bv[i][0]);
+          // boundVars.insert(bv[i][0]);
           boundVars.push_back(bv[i][0]);
         } else {
-         // boundVars.insert(bv[i]);
+          // boundVars.insert(bv[i]);
           boundVars.push_back(bv[i]);
         }
       }
@@ -3666,6 +3666,33 @@ Node QuantifierEliminate::extractQuantifierFreeFormula(Node n) {
     t = extractQuantifierFreeFormula(n[0][1]);
   } else if(n.getKind() == kind::FORALL) {
     t = extractQuantifierFreeFormula(n[1]);
+  } else if(n.getKind() == kind::NOT && n[0].getKind() == kind::AND) {
+    std::vector<Node> miniscopedExpr;
+    for(Node::iterator m_i = n[0].begin(), m_end = n[0].end(); m_i != m_end; ++m_i) {
+      Node exprs = *m_i;
+      if(exprs == kind::FORALL) {
+        miniscopedExpr.push_back(exprs[1]);
+      } else if(exprs == kind::NOT && exprs[0] == kind::FORALL) {
+        miniscopedExpr.push_back(exprs[0][1].notNode());
+      } else {
+        miniscopedExpr.push_back(exprs);
+      }
+    }
+    t = NodeManager::currentNM()->mkNode(kind::AND, miniscopedExpr);
+    t = t.notNode();
+  } else if(n.getKind() == kind::AND) {
+    std::vector<Node> miniscopedExpr;
+    for(Node::iterator m_i = n.begin(), m_end = n.end(); m_i != m_end; ++m_i) {
+      Node exprs = *m_i;
+      if(exprs == kind::FORALL) {
+        miniscopedExpr.push_back(exprs[1]);
+      } else if(exprs == kind::NOT && exprs[0] == kind::FORALL) {
+        miniscopedExpr.push_back(exprs[0][1].notNode());
+      } else {
+        miniscopedExpr.push_back(exprs);
+      }
+    }
+    t = NodeManager::currentNM()->mkNode(kind::AND, miniscopedExpr);
   } else {
     t = n;
   }
@@ -3675,20 +3702,16 @@ Node QuantifierEliminate::extractQuantifierFreeFormula(Node n) {
 Node QuantifierEliminate::evaluateExpressionOnAssignment(
     Node n, std::map<Node, Node> assignment) {
   Node temp = n;
-  std::map<Node,Node>::iterator it = assignment.begin();
-  std::map<Node,Node>::iterator it1 = assignment.begin();
-  while(it!= assignment.end())
-  {
+  std::map<Node, Node>::iterator it = assignment.begin();
+  std::map<Node, Node>::iterator it1 = assignment.begin();
+  while(it != assignment.end()) {
     it1 = assignment.find(it->first);
-    if(it1 == assignment.end())
-    {
+    if(it1 == assignment.end()) {
       continue;
-    }
-    else
-    {
+    } else {
       TNode tn1 = it->first;
       TNode tn2 = it->second;
-      temp = temp.substitute(tn1,tn2);
+      temp = temp.substitute(tn1, tn2);
       ++it;
     }
   }
@@ -3709,7 +3732,7 @@ std::vector<Node> QuantifierEliminate::mkStrongerExpression2(
         inner_expr.push_back(child);
       }
     }
-  } else{
+  } else {
     for(Node::iterator j = n.begin(), j_end = n.end(); j != j_end; ++j) {
       Node child1 = *j;
       if(child1.getKind() == kind::AND || child1.getKind() == kind::OR) {
@@ -3719,9 +3742,8 @@ std::vector<Node> QuantifierEliminate::mkStrongerExpression2(
         if(toReturn == mkBoolNode(true)) {
           inner_expr.push_back(child1);
           break;
+        } else {
         }
-        else
-        {}
       }
     }
   }
@@ -3733,21 +3755,15 @@ Node QuantifierEliminate::mkStrongerExpression(
   std::vector<Node> inner_expr;
   std::vector<Node> temp;
   Node returnNode;
-  if(n.getKind() == kind::AND || n.getKind() == kind::OR)
-  {
-    temp = mkStrongerExpression2(n,assignment,inner_expr);
-    if(temp.size()>1)
-    {
-      returnNode = NodeManager::currentNM()->mkNode(n.getKind(),temp);
-    }
-    else
-    {
+  if(n.getKind() == kind::AND || n.getKind() == kind::OR) {
+    temp = mkStrongerExpression2(n, assignment, inner_expr);
+    if(temp.size() > 1) {
+      returnNode = NodeManager::currentNM()->mkNode(n.getKind(), temp);
+    } else {
       returnNode = temp.back();
     }
     return returnNode;
-  }
-  else
-  {
+  } else {
     return n;
   }
 }
@@ -3777,8 +3793,7 @@ Node QuantifierEliminate::strongerQEProcedure(Node n, QuantifierEliminate qe) {
   std::vector < Node > bv = getBoundVariablesList(x, boundVars);
   std::set<Node> v = getFreeVariablesList(t, vars);
   std::vector<Expr> variables;
-  for(int i=0;i<(int)bv.size();i++)
-  {
+  for(int i = 0; i < (int) bv.size(); i++) {
     Debug("expr-qetest")<<"Boundvars "<<bv[i]<<std::endl;
     if(bv[i].isVar() && bv[i].getKind() == kind::BOUND_VARIABLE)
     {
@@ -3809,18 +3824,17 @@ Node QuantifierEliminate::strongerQEProcedure(Node n, QuantifierEliminate qe) {
   }
   Node strongerExpression = mkStrongerExpression(t, assignment);
   Debug("expr-qetest")<<"stronger expression without quantifiers "<<strongerExpression<<std::endl;
-  Node var = NodeManager::currentNM()->mkNode(kind::BOUND_VAR_LIST,bv);
+  Node var = NodeManager::currentNM()->mkNode(kind::BOUND_VAR_LIST, bv);
   Debug("expr-qetest")<<"var "<<var<<std::endl;
   std::vector<Node> children;
   children.push_back(var);
   children.push_back(strongerExpression);
-  Node inputExpr = NodeManager::currentNM()->mkNode(kind::FORALL,children);
-  if(n.getKind() == kind::NOT)
-  {
+  Node inputExpr = NodeManager::currentNM()->mkNode(kind::FORALL, children);
+  if(n.getKind() == kind::NOT) {
     inputExpr = inputExpr.notNode();
   }
   Debug("expr-qetest")<<"stronger expression with quantifiers "<<inputExpr<<std::endl;
-  Node returnNode = computeProjections(inputExpr,qe);
+  Node returnNode = computeProjections(inputExpr, qe);
   return returnNode;
 }
 
@@ -3893,18 +3907,18 @@ QuantifierEliminate QuantifierEliminate::qeEngine(Node n, int numOfQuantifiers,
       }
       else if(qe.getOptionQE() == "strong")
       {
-          Node t = strongerQEProcedure(temp,qe);
-          qe.setEquivalentExpression(t);
-          qe.setMessage("success");
-          return qe;
+        Node t = strongerQEProcedure(temp,qe);
+        qe.setEquivalentExpression(t);
+        qe.setMessage("success");
+        return qe;
       }
       else
       {
-          final = defautlQEProcedure(temp,qe);
-          Debug("expr-qetest")<<"After qe "<<final<<std::endl;
-          qe.setEquivalentExpression(final);
-          qe.setMessage("success");
-          return qe;
+        final = defautlQEProcedure(temp,qe);
+        Debug("expr-qetest")<<"After qe "<<final<<std::endl;
+        qe.setEquivalentExpression(final);
+        qe.setMessage("success");
+        return qe;
       }
     }
     else if(!typeCheck)
