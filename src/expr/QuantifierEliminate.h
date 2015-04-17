@@ -23,6 +23,8 @@ private:
   static std::vector<Container> container;
   static bool negationDone;
   static Integer negateCount;
+  static Integer countTypeA;
+  static Integer countTypeB;
 
   //non static variables
   Integer numOfQuantiferToElim;

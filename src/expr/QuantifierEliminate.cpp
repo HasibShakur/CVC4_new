@@ -35,6 +35,9 @@ std::vector<Container> QuantifierEliminate::container;
 Integer QuantifierEliminate::lcmValue;
 bool QuantifierEliminate::negationDone;
 Integer QuantifierEliminate::negateCount;
+Integer QuantifierEliminate::countTypeA;
+Integer QuantifierEliminate::countTypeB;
+
 
 bool QuantifierEliminate::isLiteralQE(Node n) {
   switch(n.getKind()) {
@@ -1796,6 +1799,14 @@ Node QuantifierEliminate::replaceRelationOperatorQE(Node n, Node bv) {
   } else if(n.getKind() == kind::EQUAL) {
     replaceNode = replaceEQUALQE(n, bv);
   }
+  if(replaceNode[0].hasBoundVar() && containsSameBoundVar(replaceNode[0],bv))
+  {
+    countTypeA = countTypeA+1;
+  }
+  else
+  {
+    countTypeB = countTypeB+1;
+  }
   return replaceNode;
 }
 
@@ -2499,6 +2510,7 @@ Node QuantifierEliminate::computeRightProjection(Node n, Node bv,
   }
   return result;
 }
+
 Node QuantifierEliminate::performCaseAnalysis(Node n, std::vector<Node> bv,
                                               QuantifierEliminate q) {
   Node var;
@@ -2540,6 +2552,8 @@ Node QuantifierEliminate::performCaseAnalysis(Node n, std::vector<Node> bv,
       args = doRewriting(args, var, q);
       Debug("expr-qetest")<<"After rewriting "<<args<<std::endl;
       Integer lcmCalc = lcmValue;
+      Debug("expr-qetest")<<"No of Expression of Type x<a "<<countTypeA<<std::endl;
+      Debug("expr-qetest")<<"No of Expression of Type b<x "<<countTypeB<<std::endl;
       temp = computeLeftProjection(args, var);
       left = computeXValueForLeftProjection(temp, lcmCalc);
       left = Rewriter::rewrite(left);
@@ -2574,6 +2588,8 @@ Node QuantifierEliminate::performCaseAnalysis(Node n, std::vector<Node> bv,
       Debug("expr-qetest")<<"args after pca "<<args<<std::endl;
       bv.pop_back();
       qen = qen + 1;
+      countTypeA = 0;
+      countTypeB = 0;
     }
   }
   Debug("expr-qetest")<<"args "<<args<<std::endl;
