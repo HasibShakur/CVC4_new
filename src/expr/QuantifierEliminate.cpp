@@ -1803,9 +1803,13 @@ Node QuantifierEliminate::replaceRelationOperatorQE(Node n, Node bv) {
   {
     countTypeA = countTypeA+1;
   }
-  else
+  else if(replaceNode[1].hasBoundVar() && containsSameBoundVar(replaceNode[1],bv))
   {
     countTypeB = countTypeB+1;
+  }
+  else
+  {
+    //do nothing
   }
   return replaceNode;
 }
