@@ -1799,6 +1799,8 @@ Node QuantifierEliminate::replaceRelationOperatorQE(Node n, Node bv) {
   } else if(n.getKind() == kind::EQUAL) {
     replaceNode = replaceEQUALQE(n, bv);
   }
+  Debug("expr-qetest")<<"Replace Node 0 "<<replaceNode[0]<<std::endl;
+  Debug("expr-qetest")<<"Replace Node 1 "<<replaceNode[1]<<std::endl;
   if(replaceNode[0].hasBoundVar() && containsSameBoundVar(replaceNode[0],bv))
   {
     countTypeA = countTypeA+1;
