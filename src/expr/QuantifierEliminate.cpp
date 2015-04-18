@@ -1775,6 +1775,7 @@ Node QuantifierEliminate::replaceNegateEQUALQE(Node n, Node bv) {
 }
 Node QuantifierEliminate::replaceRelationOperatorQE(Node n, Node bv) {
   Node replaceNode;
+  bool flag = false;
   if(n.getKind() == kind::NOT) {
     Node temp = n[0];
     if(temp.getKind() == kind::LT) {
@@ -1787,6 +1788,7 @@ Node QuantifierEliminate::replaceRelationOperatorQE(Node n, Node bv) {
       replaceNode = replaceNegateGEQQE(n, bv);
     } else if(temp.getKind() == kind::EQUAL) {
       replaceNode = replaceNegateEQUALQE(n, bv);
+      flag = true;
     }
   } else if(n.getKind() == kind::LT) {
     replaceNode = replaceLTQE(n, bv);
@@ -1798,21 +1800,55 @@ Node QuantifierEliminate::replaceRelationOperatorQE(Node n, Node bv) {
     replaceNode = replaceGEQQE(n, bv);
   } else if(n.getKind() == kind::EQUAL) {
     replaceNode = replaceEQUALQE(n, bv);
+    flag = true;
   }
   Debug("expr-qetest")<<"Replace Node 0 "<<replaceNode[0]<<std::endl;
   Debug("expr-qetest")<<"Replace Node 1 "<<replaceNode[1]<<std::endl;
-  if(replaceNode[0].hasBoundVar() && containsSameBoundVar(replaceNode[0],bv))
+  if(!flag)
   {
-    countTypeA = countTypeA+1;
-  }
-  else if(replaceNode[1].hasBoundVar() && containsSameBoundVar(replaceNode[1],bv))
-  {
-    countTypeB = countTypeB+1;
+    if(replaceNode[0].hasBoundVar() && containsSameBoundVar(replaceNode[0],bv))
+    {
+      countTypeA = countTypeA+1;
+    }
+    else if(replaceNode[1].hasBoundVar() && containsSameBoundVar(replaceNode[1],bv))
+    {
+      countTypeB = countTypeB+1;
+    }
+    else
+    {
+      //do nothing
+    }
   }
   else
   {
-    //do nothing
+    Node temp_0 = replaceNode[0];
+    Node temp_1 = replaceNode[1];
+    if(temp_0[0].hasBoundVar() && containsSameBoundVar(temp_0[0],bv))
+    {
+      countTypeA = countTypeA+1;
+    }
+    else if(temp_0[1].hasBoundVar() && containsSameBoundVar(temp_0[1],bv))
+    {
+      countTypeB = countTypeB+1;
+    }
+    else
+    {
+      //do nothing
+    }
+    if(temp_1[0].hasBoundVar() && containsSameBoundVar(temp_1[0],bv))
+        {
+          countTypeA = countTypeA+1;
+        }
+        else if(temp_1[1].hasBoundVar() && containsSameBoundVar(temp_1[1],bv))
+        {
+          countTypeB = countTypeB+1;
+        }
+        else
+        {
+          //do nothing
+        }
   }
+
   return replaceNode;
 }
 
